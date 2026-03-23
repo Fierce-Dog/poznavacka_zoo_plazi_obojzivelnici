@@ -6,14 +6,25 @@
     <title>Nekonečná Poznávačka</title>
     <style>
         :root { --primary: #4a90e2; --success: #2ecc71; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            
+            /* ZMĚNY ZDE: */
+            align-items: flex-start; /* Zarovná kartu k hornímu okraji místo na střed */
+            min-height: auto;        /* Zruší vynucenou výšku 100vh */
+            padding-top: 10px;       /* Malá mezera od úplného vršku, aby to nebylo nalepené */
+            margin: 0; 
+        }
         .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         img { 
 			width: 100%; 
 			height: 300px; /* Můžete zvětšit na 350px nebo 400px podle potřeby */
 			border-radius: 15px; 
 			object-fit: contain; /* TATO ZMĚNA zajistí, že bude vidět celý obrázek */
-			margin-bottom: 1rem; 
+			margin-bottom: 0; 
 			background: #fdfdfd; /* Jemné pozadí, kdyby byl obrázek úzký */
 		}
         input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; }
@@ -24,22 +35,31 @@
 		.card { 
 			display: flex; 
 			flex-direction: column; 
-			gap: 10px; /* Vytvoří stejné mezery mezi prvky */
+			gap: 4px; /* Vytvoří stejné mezery mezi prvky */
 		}
 		#msg { 
 			margin: 0; 
-			padding: 10px 0;
+			padding: 0;
+            line-height: 0.5;
 			order: 1; /* Zpráva bude úplně nahoře */
 		}
 		#info { 
+            margin: 0px 0 5px 0;
 			order: 2; /* Info o pokusech bude pod zprávou */
 		}
 		#pic { 
 			order: 3; /* Obrázek pod info texty */
+            margin: -5px 0 -5px 0;
 		}
 		#input-area {
-			order: 4; /* Vstupní pole a tlačítko úplně dole */
+			order: 5; /* Vstupní pole a tlačítko úplně dole */
 		}
+        #video-box { 
+            order: 4; /* Tlačítko na video bude hned pod obrázkem */
+            display: flex;
+            justify-content: center;
+    
+        }
         .back-link {
             display: block; /* Zajistí, že odkaz zabere celou šířku a umožní zarovnání */
             text-align: left; /* Tlačí text odkazu doleva */
@@ -61,6 +81,7 @@
     <p id="msg">Máš 3 pokusy</p>
     <p id="info"></p>
     <img id="pic" src="" alt="Načítám...">
+    <div id="video-box" style="margin-top: 1px; margin-bottom: 10px;"></div>
     <div id="input-area">
         <input type="text" id="guess-name" placeholder="Druh česky (např. pes domácí)" autocomplete="off"
             onkeypress="if(event.key === 'Enter') check()">
@@ -74,59 +95,59 @@
 <script>
     // --- VAŠE DATA ---
     const items = [
-        { file: "Obojzivelnici/mlok_skvrnity.jpg", name: "Mlok skvrnitý", order: "Caudata" },
-        { file: "Obojzivelnici/colek_obecny.jpg", name: "Čolek obecný", order: "Caudata" },
-        { file: "Obojzivelnici/colek_horsky.jpg", name: "Čolek horský", order: "Caudata" },
-        { file: "Obojzivelnici/colek_velky.jpg", name: "Čolek velký", order: "Caudata" },
-        { file: "Obojzivelnici/axolotl_mexicky.jpg", name: "Axolotl mexický", order: "Caudata" },
-        { file: "Obojzivelnici/velemlok_cinsky.jpg", name: "Velemlok čínský", order: "Caudata" },
-        { file: "Obojzivelnici/zebrovnik_waltluv.jpg", name: "Žebrovník Waltlův", order: "Caudata" },
-        { file: "Obojzivelnici/cervor_krouzkovany.jpg", name: "Červor kroužkovaný", order: "Caudata" },
-        { file: "Obojzivelnici/ropucha_obecna.jpg", name: "Ropucha obecná", order: "Anura" },
-        { file: "Obojzivelnici/ropucha_kratkonoha.jpg", name: "Ropucha krátkonohá", order: "Anura" },
-        { file: "Obojzivelnici/ropucha_zelna.jpg", name: "Ropucha zelná", order: "Anura" },
-        { file: "Obojzivelnici/skokan_ostronosy.jpg", name: "Skokan ostronosý", order: "Anura" },
-        { file: "Obojzivelnici/skokan_zeleny.jpg", name: "Skokan zelený", order: "Anura" },
-        { file: "Obojzivelnici/rosnicka_zelena.jpg", name: "Rosnička zelená", order: "Anura" },
-        { file: "Obojzivelnici/blatnice_skvrnita.jpg", name: "Blatnice skvrnitá", order: "Anura" },
-        { file: "Obojzivelnici/kunka_zlutobricha.jpg", name: "Kuňka žlutobřichá", order: "Anura" },
-        { file: "Obojzivelnici/kunka_obecna.jpg", name: "Kuňka obecná", order: "Anura" },
-        { file: "Obojzivelnici/listovnice_cervenooka.jpg", name: "Listovnice červenooká", order: "Anura" },
-        { file: "Obojzivelnici/drapatka_vodni.jpg", name: "Drápatka vodní", order: "Anura" },
-        { file: "Obojzivelnici/pralesnicka_strasna.jpg", name: "Pralesnička strašná", order: "Anura" },
-        { file: "Obojzivelnici/pipa_americka.jpg", name: "Pipa americká", order: "Anura" },
-        { file: "Plazi/zmije_obecna.jpg", name: "Zmije obecná", order: "Squamata" },
-        { file: "Plazi/uzovka_obojkova.jpg", name: "Užovka obojková", order: "Squamata" },
-        { file: "Plazi/uzovka_podplamata.jpg", name: "Užovka podplamatá", order: "Squamata" },
-        { file: "Plazi/uzovka_hladka.jpg", name: "Užovka hladká", order: "Squamata" },
-        { file: "Plazi/uzovka_stromova.jpg", name: "Užovka stromová", order: "Squamata" },
-        { file: "Plazi/hroznys_kralovsky.jpg", name: "Hroznýš královský", order: "Squamata" },
-        { file: "Plazi/krajta_kralovska.jpg", name: "Krajta královská", order: "Squamata" },
-        { file: "Plazi/krajta_zelena.jpg", name: "Krajta zelená", order: "Squamata" },
-        { file: "Plazi/slepys_krehky.jpg", name: "Slepýš křehký", order: "Squamata" },
-        { file: "Plazi/jesterka_obecna.jpg", name: "Ještěrka obecná", order: "Squamata" },
-        { file: "Plazi/jesterka_zelena.jpg", name: "Ještěrka zelená", order: "Squamata" },
-        { file: "Plazi/jesterka_zivoroda.jpg", name: "Ještěrka živorodá", order: "Squamata" },
-        { file: "Plazi/jesterka_zedni.jpg", name: "Ještěrka zední", order: "Squamata" },
-        { file: "Plazi/agama_hardun.jpg", name: "Agama hardún", order: "Squamata" },
-        { file: "Plazi/agama_limcova.jpg", name: "Agama límcová", order: "Squamata" },
-        { file: "Plazi/varan_komodsky.jpg", name: "Varan komodský", order: "Squamata" },
-        { file: "Plazi/felsuma_madagaskarska.jpg", name: "Felsuma madagaskarská", order: "Squamata" },
-        { file: "Plazi/leguan_zeleny.jpg", name: "Leguán zelený", order: "Squamata" },
-        { file: "Plazi/gekon_obrovsky.jpg", name: "Gekon obrovský", order: "Squamata" },
-        { file: "Plazi/zelva_sloni.jpg", name: "Želva sloní", order: "Testudines" },
-        { file: "Plazi/zelva_nadherna.jpg", name: "Želva nádherná", order: "Testudines" },
-        { file: "Plazi/zelva_bahenni.jpg", name: "Želva bahenní", order: "Testudines" },
-        { file: "Plazi/zelva_zlutohneda.jpg", name: "Želva žlutohnědá", order: "Testudines" },
-        { file: "Plazi/zelva_zelenava.jpg", name: "Želva zelenavá", order: "Testudines" },
-        { file: "Plazi/zelva_stepni.jpg", name: "Želva stepní", order: "Testudines" },
-        { file: "Plazi/matamata_trasnita.jpg", name: "Matamata třásnitá", order: "Testudines" },
-        { file: "Plazi/kajmanka_drava.jpg", name: "Kajmanka dravá", order: "Testudines" },
-        { file: "Plazi/aligator_severoamericky.jpg", name: "Aligátor severoamerický", order: "Crocodilia" },
-        { file: "Plazi/gavial_indicky.jpg", name: "Gaviál indický", order: "Crocodilia" },
-        { file: "Plazi/kajman_brylovy.jpg", name: "Kajman brýlový", order: "Crocodilia" },
-        { file: "Plazi/krokodyl_nilsky.jpg", name: "Krokodýl nilský", order: "Crocodilia" },
-        { file: "Plazi/krokodyl_celnaty.jpg", name: "Krokodýl čelnatý", order: "Crocodilia" }
+        { file: "Obojzivelnici/mlok_skvrnity.jpg", name: "Mlok skvrnitý", order: "Caudata", link: "https://www.youtube.com/watch?v=xy2eS9gAmRA&ab_channel=P%C5%99%C3%ADrodov%C4%9Bdn%C3%BDspolekDob%C5%99%C3%AD%C5%A1" },
+        { file: "Obojzivelnici/colek_obecny.jpg", name: "Čolek obecný", order: "Caudata", link: "https://www.youtube.com/watch?v=6ulJ2R1ou0I&ab_channel=Gozer3" },
+        { file: "Obojzivelnici/colek_horsky.jpg", name: "Čolek horský", order: "Caudata", link: "https://www.youtube.com/watch?v=w3y236aP2XM&ab_channel=Zoogeography" },
+        { file: "Obojzivelnici/colek_velky.jpg", name: "Čolek velký", order: "Caudata", link: "https://www.youtube.com/watch?v=KjbzH_HprWI&ab_channel=PeterDob%C5%A1insk%C3%BD" },
+        { file: "Obojzivelnici/axolotl_mexicky.jpg", name: "Axolotl mexický", order: "Caudata", link: "https://www.youtube.com/watch?v=0wP6JqnihcU&ab_channel=marketingman99" },
+        { file: "Obojzivelnici/velemlok_cinsky.jpg", name: "Velemlok čínský", order: "Caudata", link: "https://www.youtube.com/shorts/vTeXHg6O_1U" },
+        { file: "Obojzivelnici/zebrovnik_waltluv.jpg", name: "Žebrovník Waltlův", order: "Caudata", link: "https://www.youtube.com/watch?v=i0303EPk190" },
+        { file: "Obojzivelnici/cervor_krouzkovany.jpg", name: "Červor kroužkovaný", order: "Caudata", link: "https://www.youtube.com/watch?v=UOHS6gpjsd0" },
+        { file: "Obojzivelnici/ropucha_obecna.jpg", name: "Ropucha obecná", order: "Anura", link: "https://www.youtube.com/watch?v=rD3vPPfrtb4&ab_channel=NaturePictureLibrary" },
+        { file: "Obojzivelnici/ropucha_kratkonoha.jpg", name: "Ropucha krátkonohá", order: "Anura", link: "https://www.youtube.com/watch?v=MOMq6qD7aEg&ab_channel=CHASINGSCALES" },
+        { file: "Obojzivelnici/ropucha_zelna.jpg", name: "Ropucha zelná", order: "Anura", link: "https://www.youtube.com/watch?v=PN5UxVKVka8&ab_channel=stefanostokatlidis" },
+        { file: "Obojzivelnici/skokan_ostronosy.jpg", name: "Skokan ostronosý", order: "Anura", link: "https://www.youtube.com/watch?v=AEuhf_5uYFc&ab_channel=Tom%C3%A1%C5%A1Klacek" },
+        { file: "Obojzivelnici/skokan_zeleny.jpg", name: "Skokan zelený", order: "Anura", link: "https://www.youtube.com/watch?v=Qy6Rnw9j5WI&ab_channel=PascalVagner" },
+        { file: "Obojzivelnici/rosnicka_zelena.jpg", name: "Rosnička zelená", order: "Anura", link: "https://www.youtube.com/watch?v=dLyn9lDsR2M&ab_channel=Biology" },
+        { file: "Obojzivelnici/blatnice_skvrnita.jpg", name: "Blatnice skvrnitá", order: "Anura", link: "https://www.youtube.com/watch?v=IWQ4aUa8U3g&ab_channel=VideoHD" },
+        { file: "Obojzivelnici/kunka_zlutobricha.jpg", name: "Kuňka žlutobřichá", order: "Anura", link: "https://www.youtube.com/watch?v=BV-LSCYPo8E&ab_channel=Herpsafari" },
+        { file: "Obojzivelnici/kunka_obecna.jpg", name: "Kuňka obecná", order: "Anura", link: "https://www.youtube.com/watch?v=AU7aZksz5no&ab_channel=FilipSalek" },
+        { file: "Obojzivelnici/listovnice_cervenooka.jpg", name: "Listovnice červenooká", order: "Anura", link: "https://www.youtube.com/watch?v=lIOSl_JCWW4" },
+        { file: "Obojzivelnici/drapatka_vodni.jpg", name: "Drápatka vodní", order: "Anura", link: "https://www.youtube.com/watch?v=4igxNNrM9eI" },
+        { file: "Obojzivelnici/pralesnicka_strasna.jpg", name: "Pralesnička strašná", order: "Anura", link: "https://www.youtube.com/watch?v=BjKbDskYDrY" },
+        { file: "Obojzivelnici/pipa_americka.jpg", name: "Pipa americká", order: "Anura", link: "https://www.youtube.com/watch?v=mZ7b4spjXhw&ab_channel=bombsonyourmoms" },
+        { file: "Plazi/zmije_obecna.jpg", name: "Zmije obecná", order: "Squamata", link: "https://www.youtube.com/watch?v=i3B6-5RS3kc" },
+        { file: "Plazi/uzovka_obojkova.jpg", name: "Užovka obojková", order: "Squamata", link: "https://www.youtube.com/watch?v=dfVeI2JRab4" },
+        { file: "Plazi/uzovka_podplamata.jpg", name: "Užovka podplamatá", order: "Squamata", link: "https://www.youtube.com/watch?v=ajxOxMfX8xU" },
+        { file: "Plazi/uzovka_hladka.jpg", name: "Užovka hladká", order: "Squamata", link: "https://www.youtube.com/watch?v=jQU2q6OqiNg" },
+        { file: "Plazi/uzovka_stromova.jpg", name: "Užovka stromová", order: "Squamata", link: "https://www.youtube.com/watch?v=2PGMNAbQVwI" },
+        { file: "Plazi/hroznys_kralovsky.jpg", name: "Hroznýš královský", order: "Squamata", link: "https://www.youtube.com/watch?v=Px7pxz_T0_s" },
+        { file: "Plazi/krajta_kralovska.jpg", name: "Krajta královská", order: "Squamata", link: "https://www.youtube.com/watch?v=n0yDhV1xy0g" },
+        { file: "Plazi/krajta_zelena.jpg", name: "Krajta zelená", order: "Squamata", link: "https://www.youtube.com/watch?v=f3QOOEd3zBo" },
+        { file: "Plazi/slepys_krehky.jpg", name: "Slepýš křehký", order: "Squamata", link: "https://www.youtube.com/watch?v=R48skQRcDos" },
+        { file: "Plazi/jesterka_obecna.jpg", name: "Ještěrka obecná", order: "Squamata", link: "https://www.youtube.com/watch?v=k1_dbjYcUS4" },
+        { file: "Plazi/jesterka_zelena.jpg", name: "Ještěrka zelená", order: "Squamata", link: "https://www.youtube.com/watch?v=IUCDFe5GvFk" },
+        { file: "Plazi/jesterka_zivoroda.jpg", name: "Ještěrka živorodá", order: "Squamata", link: "https://www.youtube.com/watch?v=0iG2a1FhTKs" },
+        { file: "Plazi/jesterka_zedni.jpg", name: "Ještěrka zední", order: "Squamata", link: "https://www.youtube.com/watch?v=ud-VKh_1MfA" },
+        { file: "Plazi/agama_hardun.jpg", name: "Agama hardún", order: "Squamata", link: "https://www.youtube.com/watch?v=KeW4M3u73i0" },
+        { file: "Plazi/agama_limcova.jpg", name: "Agama límcová", order: "Squamata", link: "https://www.youtube.com/watch?v=x8OqEGj46EY" },
+        { file: "Plazi/varan_komodsky.jpg", name: "Varan komodský", order: "Squamata", link: "https://www.youtube.com/watch?v=cwheyaDWWOQ" },
+        { file: "Plazi/felsuma_madagaskarska.jpg", name: "Felsuma madagaskarská", order: "Squamata", link: "https://www.youtube.com/watch?v=LuKLY97K7vQ" },
+        { file: "Plazi/leguan_zeleny.jpg", name: "Leguán zelený", order: "Squamata", link: "https://www.youtube.com/watch?v=6YY1EQQAMSY" },
+        { file: "Plazi/gekon_obrovsky.jpg", name: "Gekon obrovský", order: "Squamata", link: "https://www.youtube.com/watch?v=swhBYYnyZUQ" },
+        { file: "Plazi/zelva_sloni.jpg", name: "Želva sloní", order: "Testudines", link: "https://www.youtube.com/shorts/gTBo99Qk-F4" },
+        { file: "Plazi/zelva_nadherna.jpg", name: "Želva nádherná", order: "Testudines", link: "https://www.youtube.com/watch?v=xxkmOAaTMdw" },
+        { file: "Plazi/zelva_bahenni.jpg", name: "Želva bahenní", order: "Testudines", link: "https://www.youtube.com/watch?v=AL5SsKZ-B5Q" },
+        { file: "Plazi/zelva_zlutohneda.jpg", name: "Želva žlutohnědá", order: "Testudines", link: "https://www.youtube.com/watch?v=NBFw7GYlBio" },
+        { file: "Plazi/zelva_zelenava.jpg", name: "Želva zelenavá", order: "Testudines", link: "https://www.youtube.com/watch?v=ElLe0mZ5_aE" },
+        { file: "Plazi/zelva_stepni.jpg", name: "Želva stepní", order: "Testudines", link: "https://www.youtube.com/watch?v=_6tNaUY1wwQ" },
+        { file: "Plazi/matamata_trasnita.jpg", name: "Matamata třásnitá", order: "Testudines", link: "https://www.youtube.com/watch?v=XxmPYw-KZRg" },
+        { file: "Plazi/kajmanka_drava.jpg", name: "Kajmanka dravá", order: "Testudines", link: "https://www.youtube.com/watch?v=hoPmBTJhRUI" },
+        { file: "Plazi/aligator_severoamericky.jpg", name: "Aligátor severoamerický", order: "Crocodilia", link: "https://www.youtube.com/watch?v=Cy2akN2bTX4" },
+        { file: "Plazi/gavial_indicky.jpg", name: "Gaviál indický", order: "Crocodilia", link: "https://www.youtube.com/watch?v=UboaQgvbpb0" },
+        { file: "Plazi/kajman_brylovy.jpg", name: "Kajman brýlový", order: "Crocodilia", link: "https://www.youtube.com/watch?v=dzX9q-9Rj4g" },
+        { file: "Plazi/krokodyl_nilsky.jpg", name: "Krokodýl nilský", order: "Crocodilia", link: "https://www.youtube.com/watch?v=AKeA-12p7yg" },
+        { file: "Plazi/krokodyl_celnaty.jpg", name: "Krokodýl čelnatý", order: "Crocodilia", link: "https://www.youtube.com/watch?v=J-T_WrpCecc" }
     ];
 
     let current;
@@ -139,6 +160,7 @@
         const picField = document.getElementById("pic");
         const inName = document.getElementById("guess-name");
         const inOrder = document.getElementById("guess-order");
+        const videoBox = document.getElementById("video-box");
 
         // 1. KONTROLA POOLU (Tohle ti chybělo)
         if (pool.length === 0) {
@@ -149,6 +171,30 @@
         const idx = Math.floor(Math.random() * pool.length);
         current = pool[idx];
         picField.src = current.file;
+
+        // --- 3. LOGIKA PRO VIDEO TLAČÍTKO ---
+        videoBox.innerHTML = ""; // Vyčistit minulé kolo
+        if (current.link && current.link !== "") {
+            const videoBtn = document.createElement("a");
+            videoBtn.href = current.link;
+            videoBtn.target = "_blank";
+            videoBtn.innerHTML = "📺 Odkaz na video";
+        
+        // Styl tlačítka
+            videoBtn.style.display = "inline-block";
+            videoBtn.style.padding = "8px 8px";
+            videoBtn.style.backgroundColor = "#1565c0";
+            videoBtn.style.color = "white";
+            videoBtn.style.borderRadius = "10px";
+            videoBtn.style.textDecoration = "none";
+            videoBtn.style.fontSize = "13px";
+            videoBtn.style.fontWeight = "bold";
+            videoBtn.style.marginTop = "5px";
+            videoBtn.style.marginBottom = "2px";
+            videoBtn.style.boxShadow = "0 3px 8px rgba(21, 101, 192, 0.3)";
+
+        videoBox.appendChild(videoBtn);
+        }
 
         // 3. RESET STAVU
         phase = 1; 
